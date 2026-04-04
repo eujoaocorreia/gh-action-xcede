@@ -1,50 +1,109 @@
-name: 'Run xcede'
-description: 'GitHub Action for the xcede tool'
-author: 'eujoaocorreia'
-
-branding:
-  icon: 'check-circle'
-  color: 'blue'
-
+name: "Run xcede"
+description: "GitHub Action for the xcede tool"
+author: "Joao Correia"
 inputs:
   version:
-    description: 'Version of xcede to install (e.g. "1.2.3" or "latest")'
+    description: 'Version of xcede to install (e.g., "latest" or "v1.2.3")'
     required: false
-    default: 'latest'
+    default: "latest"
   args:
-    description: 'Additional arguments to pass to xcede'
+    description: "Additional arguments to pass to xcede"
     required: false
-    default: ''
-
+    default: ""
 outputs:
   result:
-    description: 'Output produced by xcede'
-    value: ${{ steps.run-xcede.outputs.result }}
-
+    description: "Output produced by xcede"
+    value: ${{ steps.run.outputs.result }}
 runs:
-  using: 'composite'
+  using: "composite"
   steps:
-    - name: Set up xcede
+    - name: Resolve version
+      id: resolve
       shell: bash
-      env:
-        XCEDE_VERSION: ${{ inputs.version }}
       run: |
-        echo "::group::Installing xcede $XCEDE_VERSION"
-        # Replace the lines below with the real xcede installation command,
-        # e.g. downloading a binary from a release or running `pip install xcede`.
-        echo "xcede $XCEDE_VERSION installed successfully."
-        echo "::endgroup::"
+        VERSION="${{ inputs.version }}"
+        if [ "$VERSION" = "latest" ]; then
+          echo "Resolving latest version from Codeberg..."
+          VERSION=$(curl -sL https://codeberg.org/api/v1/repos/luxmentis/xcede/releases/latest | jq -r .tag_name)
+          if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
+            echo "Failed to resolve latest version."
+            exit 1
+          fi
+        fi
+        echo "Resolved version: $VERSION"
+        echo "resolved_version=$VERSION" >> "$GITHUB_OUTPUT"
+
+    - name: Cache xcede binary
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.xcede/bin
+        key: xcede-${{ runner.os }}-${{ steps.resolve.outputs.resolved_version }}
+
+    - name: Download and Build xcede
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        VERSION="${{ steps.resolve.outputs.resolved_version }}"
+        mkdir -p ~/.xcede/bin
+        mkdir -p /tmp/xcede-build
+        cd /tmp/xcede-build
+
+        ZIP_URL="https://codeberg.org/luxmentis/xcede/archive/${VERSION}.zip"
+        echo "Downloading xcede $VERSION from $ZIP_URL"
+        curl -sL "$ZIP_URL" -o xcede.zip
+
+        echo "Extracting archive..."
+        unzip -q xcede.zip
+        cd xcede
+
+        echo "Running build.sh..."
+        chmod +x build.sh
+        ./build.sh
+
+        echo "Installing binary..."
+        # Locate the compiled xcede binary and move it to the cache directory
+        if [ -f "xcede" ]; then
+          mv xcede ~/.xcede/bin/
+        else
+          # Fallback to finding the executable named 'xcede'
+          BINARY_PATH=$(find . -name "xcede" -type f -executable | head -n 1)
+          if [ -n "$BINARY_PATH" ]; then
+            mv "$BINARY_PATH" ~/.xcede/bin/
+          else
+            echo "Error: Could not find compiled xcede binary."
+            exit 1
+          fi
+        fi
+
+        chmod +x ~/.xcede/bin/xcede
+        echo "Build and installation complete."
+
+    - name: Add to PATH
+      shell: bash
+      run: echo "$HOME/.xcede/bin" >> "$GITHUB_PATH"
 
     - name: Run xcede
-      id: run-xcede
+      id: run
       shell: bash
-      env:
-        XCEDE_ARGS: ${{ inputs.args }}
       run: |
-        echo "::group::Running xcede"
-        # Replace the line below with the actual xcede invocation,
-        # e.g. `xcede $XCEDE_ARGS`.
-        OUTPUT="xcede ran with args: $XCEDE_ARGS"
+        echo "Running xcede ${{ inputs.args }}"
+
+        # Execute xcede and capture its output
+        set +e
+        OUTPUT=$(xcede ${{ inputs.args }} 2>&1)
+        EXIT_CODE=$?
+        set -e
+
         echo "$OUTPUT"
-        echo "result=$OUTPUT" >> "$GITHUB_OUTPUT"
-        echo "::endgroup::"
+
+        # Securely pass multi-line output to GITHUB_OUTPUT
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "result<<$EOF" >> "$GITHUB_OUTPUT"
+        echo "$OUTPUT" >> "$GITHUB_OUTPUT"
+        echo "$EOF" >> "$GITHUB_OUTPUT"
+
+        if [ $EXIT_CODE -ne 0 ]; then
+          echo "xcede failed with exit code $EXIT_CODE"
+          exit $EXIT_CODE
+        fi
