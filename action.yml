@@ -1,0 +1,50 @@
+name: 'Run xcede'
+description: 'GitHub Action for the xcede tool'
+author: 'eujoaocorreia'
+
+branding:
+  icon: 'check-circle'
+  color: 'blue'
+
+inputs:
+  version:
+    description: 'Version of xcede to install (e.g. "1.2.3" or "latest")'
+    required: false
+    default: 'latest'
+  args:
+    description: 'Additional arguments to pass to xcede'
+    required: false
+    default: ''
+
+outputs:
+  result:
+    description: 'Output produced by xcede'
+    value: ${{ steps.run-xcede.outputs.result }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up xcede
+      shell: bash
+      env:
+        XCEDE_VERSION: ${{ inputs.version }}
+      run: |
+        echo "::group::Installing xcede $XCEDE_VERSION"
+        # Replace the lines below with the real xcede installation command,
+        # e.g. downloading a binary from a release or running `pip install xcede`.
+        echo "xcede $XCEDE_VERSION installed successfully."
+        echo "::endgroup::"
+
+    - name: Run xcede
+      id: run-xcede
+      shell: bash
+      env:
+        XCEDE_ARGS: ${{ inputs.args }}
+      run: |
+        echo "::group::Running xcede"
+        # Replace the line below with the actual xcede invocation,
+        # e.g. `xcede $XCEDE_ARGS`.
+        OUTPUT="xcede ran with args: $XCEDE_ARGS"
+        echo "$OUTPUT"
+        echo "result=$OUTPUT" >> "$GITHUB_OUTPUT"
+        echo "::endgroup::"
