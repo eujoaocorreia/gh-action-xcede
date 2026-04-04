@@ -2,6 +2,14 @@
 
 > GitHub Action for the **xcede** tool.
 
+## About xcede
+
+**xcede** is a CLI tool created by [luxmentis](https://codeberg.org/luxmentis). This GitHub Action wraps the tool for easy integration into your CI/CD pipelines, automatically downloading, building, and caching the binary to speed up your workflows.
+
+- **Repository**: [https://codeberg.org/luxmentis/xcede](https://codeberg.org/luxmentis/xcede)
+- **Releases**: [https://codeberg.org/luxmentis/xcede/releases](https://codeberg.org/luxmentis/xcede/releases)
+- **Documentation**: [https://codeberg.org/luxmentis/xcede/src/branch/main/HELP.md](https://codeberg.org/luxmentis/xcede/src/branch/main/HELP.md)
+
 ## Usage
 
 Add the action to any workflow step:
