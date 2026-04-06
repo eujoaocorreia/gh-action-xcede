@@ -13,11 +13,11 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        version: ["0.4.0", "0.2.0"]
+        version: ["latest", "0.4.0", "0.2.0"]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Run directly via action
         id: xcede-run
@@ -41,11 +41,11 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        version: ["0.4.0"]
+        version: ["latest"]
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install xcede (Should hit cache)
         uses: ./

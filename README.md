@@ -16,7 +16,7 @@ Because `xcede` is rapidly evolving, recent versions require very modern Swift t
 
 | xcede Version | Required Swift / Xcode | Works on `macos-latest`? | Notes |
 |---------------|------------------------|--------------------------|-------|
-| `< 0.5.0`     | Swift 6.1 / Xcode 16.0 | ✅ Yes                   | Fully supported on current GitHub runners. |
+| `<= 0.4.0`    | Swift 6.1 / Xcode 16.0 | ✅ Yes                   | Fully supported on current GitHub runners. |
 | `>= 0.5.0`    | Swift 6.2+ (Xcode 16.3)| ❌ No                    | Fails to build because standard GitHub runners do not yet have Xcode 16.3 / Swift 6.2 installed by default. |
 
 *Note: Once GitHub Actions updates their `macos-latest` runner image to natively include Xcode 16.3+, newer versions (like `latest` or `0.8.0`) will automatically begin compiling successfully.*
@@ -55,7 +55,7 @@ This action can be used in two ways: to run `xcede` directly via the action's `a
 | Input     | Required | Default    | Description                           |
 |-----------|----------|------------|---------------------------------------|
 | `version` | No       | `'latest'` | Version of xcede to install           |
-| `args`    | No       | `''`       | Additional arguments to pass to xcede |
+| `args`    | No       | `--help`       | Additional arguments to pass to xcede |
 
 ### Outputs
 

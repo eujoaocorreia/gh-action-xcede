@@ -1,21 +1,24 @@
-name: "Run xcede"
-description: "GitHub Action for the xcede tool"
-author: "Joao Correia"
+name: Run xcede
+description: GitHub Action for the xcede tool
+author: Joao Correia
+
 inputs:
   version:
-    description: 'Version of xcede to install (e.g., "latest" or "v1.2.3")'
+    description: Version of xcede to install (e.g., "latest" or "v1.2.3")
     required: false
-    default: "latest"
+    default: latest
   args:
-    description: "Additional arguments to pass to xcede"
+    description: Additional arguments to pass to xcede
     required: false
-    default: ""
+    default: --help
+
 outputs:
   result:
-    description: "Output produced by xcede"
+    description: Output produced by xcede
     value: ${{ steps.run.outputs.result }}
+
 runs:
-  using: "composite"
+  using: composite
   steps:
     - name: Resolve version
       id: resolve
@@ -56,6 +59,13 @@ runs:
         echo "Extracting archive..."
         unzip -q xcede.zip
         cd xcede
+
+        # Explicitly select Xcode 16.4 to support Swift 6.2+ if available
+        if [ -d "/Applications/Xcode_16.4.app" ]; then
+          echo "Selecting Xcode 16.4..."
+          sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+        fi
+
         ./build.sh
 
         echo "Installing binary..."
