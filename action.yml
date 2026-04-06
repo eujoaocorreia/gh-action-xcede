@@ -63,6 +63,9 @@ runs:
           if [ -n "$SWIFT_VER" ]; then
             echo "Adjusting Package.swift tools version to $SWIFT_VER.0"
             sed -i.bak -E "s/swift-tools-version:.*$/swift-tools-version: $SWIFT_VER.0/" Package.swift
+
+            # Remove Swift 6.2+ specific settings not available in older runners
+            sed -i.bak2 -E '/\.defaultIsolation/d' Package.swift
           fi
         fi
 
