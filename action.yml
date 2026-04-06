@@ -57,6 +57,15 @@ runs:
         unzip -q xcede.zip
         cd xcede
 
+        # Adjust Swift tools version to match the runner's installed version
+        if [ -f "Package.swift" ]; then
+          SWIFT_VER=$(swift --version | grep -Eo 'Swift version [0-9]+\.[0-9]+' | awk '{print $3}')
+          if [ -n "$SWIFT_VER" ]; then
+            echo "Adjusting Package.swift tools version to $SWIFT_VER.0"
+            sed -i.bak -E "s/swift-tools-version:.*$/swift-tools-version: $SWIFT_VER.0/" Package.swift
+          fi
+        fi
+
         echo "Running build.sh..."
         chmod +x build.sh
         ./build.sh
