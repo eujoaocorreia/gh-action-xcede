@@ -60,10 +60,18 @@ runs:
         unzip -q xcede.zip
         cd xcede
 
-        # Explicitly select Xcode 16.4 to support Swift 6.2+ if available
-        if [ -d "/Applications/Xcode_16.4.app" ]; then
-          echo "Selecting Xcode 16.4..."
-          sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+        CURRENT_XCODE=$(xcodebuild -version | grep Xcode | awk '{print $2}')
+        echo "Current Xcode version: $CURRENT_XCODE"
+
+        # Compare versions (switch if lower than 26.0.1)
+        if [[ "$(printf '%s\n' "26.0.1" "$CURRENT_XCODE" | sort -V | head -n1)" == "$CURRENT_XCODE" && "$CURRENT_XCODE" != "26.0.1" ]]; then
+          echo "Xcode version is lower than 26.0.1. Attempting to select a newer version..."
+          if [ -d "/Applications/Xcode_26.0.app" ]; then
+            echo "Selecting Xcode 26.0..."
+            sudo xcode-select -s /Applications/Xcode_26.0.app/Contents/Developer
+          else
+            echo "Warning: Could not find Xcode 26.0+. Make sure to use runner macos-15+"
+          fi
         fi
 
         ./build.sh
@@ -96,7 +104,6 @@ runs:
       run: |
         echo "Running xcede ${{ inputs.args }}"
 
-        # Execute xcede and capture its output
         set +e
         OUTPUT=$(xcede ${{ inputs.args }} 2>&1)
         EXIT_CODE=$?
@@ -104,7 +111,6 @@ runs:
 
         echo "$OUTPUT"
 
-        # Securely pass multi-line output to GITHUB_OUTPUT
         EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
         echo "result<<$EOF" >> "$GITHUB_OUTPUT"
         echo "$OUTPUT" >> "$GITHUB_OUTPUT"

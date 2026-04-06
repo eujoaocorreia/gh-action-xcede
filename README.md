@@ -12,18 +12,12 @@
 
 ## Compatibility & macOS Runners
 
-Because `xcede` is rapidly evolving, recent versions require very modern Swift toolchains to compile from source. Please be aware of the following compatibility when choosing your `version` input on GitHub Actions:
-
-| xcede Version | Required Swift / Xcode | Works on `macos-latest`? | Notes |
-|---------------|------------------------|--------------------------|-------|
-| `<= 0.4.0`    | Swift 6.1 / Xcode 16.0 | ✅ Yes                   | Fully supported on current GitHub runners. |
-| `>= 0.5.0`    | Swift 6.2+ (Xcode 16.3)| ❌ No                    | Fails to build because standard GitHub runners do not yet have Xcode 16.3 / Swift 6.2 installed by default. |
-
-*Note: Once GitHub Actions updates their `macos-latest` runner image to natively include Xcode 16.3+, newer versions (like `latest` or `0.8.0`) will automatically begin compiling successfully.*
+Make sure to use macos-15+ runner.\
+Because `xcede` needs Xcode 26+ to compile from source.
 
 ## Usage
 
-> **Note:** Because `xcede` is a tool for building Apple applications (like iOS), this action must be run on a macOS runner (e.g., `macos-latest` or `macos-13`).
+> **Note:** Because `xcede` is a tool for building Apple applications (like iOS), this action must be run on a macOS runner (e.g., `macos-latest` or `macos-15`).
 
 This action can be used in two ways: to run `xcede` directly via the action's `args` input, or to install it so it is available in your `$PATH` for subsequent shell steps.
 
@@ -34,7 +28,7 @@ This action can be used in two ways: to run `xcede` directly via the action's `a
   uses: eujoaocorreia/gh-action-xcede@v1
   with:
     version: 'latest'   # optional, defaults to "latest"
-    args: '--help'      # optional, extra CLI arguments
+    args: '--help'      # optional, extra CLI arguments, defaults to "--help"
 ```
 
 ### Option 2: Install and use in subsequent steps
@@ -55,7 +49,7 @@ This action can be used in two ways: to run `xcede` directly via the action's `a
 | Input     | Required | Default    | Description                           |
 |-----------|----------|------------|---------------------------------------|
 | `version` | No       | `'latest'` | Version of xcede to install           |
-| `args`    | No       | `--help`       | Additional arguments to pass to xcede |
+| `args`    | No       | `--help`   | Additional arguments to pass to xcede |
 
 ### Outputs
 
@@ -77,7 +71,7 @@ jobs:
   xcede:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Example 1: Using the action to execute xcede and capture output
       - name: Run xcede
