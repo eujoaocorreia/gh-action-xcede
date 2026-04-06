@@ -56,27 +56,6 @@ runs:
         echo "Extracting archive..."
         unzip -q xcede.zip
         cd xcede
-
-        # Adjust Swift tools version to match the runner's installed version
-        if [ -f "Package.swift" ]; then
-          SWIFT_VER=$(swift --version | grep -Eo 'Swift version [0-9]+\.[0-9]+' | awk '{print $3}')
-          if [ -n "$SWIFT_VER" ]; then
-            echo "Adjusting Package.swift tools version to $SWIFT_VER.0"
-            sed -i.bak -E "s/swift-tools-version:.*$/swift-tools-version: $SWIFT_VER.0/" Package.swift
-
-            # Remove Swift 6.2+ specific settings not available in older runners
-            sed -i.bak2 -E '/\.defaultIsolation/d' Package.swift
-
-            echo "Resolving packages to patch dependency tool versions..."
-            swift package resolve
-            find .build/checkouts -name Package.swift -exec sed -i.bak3 -E "s/swift-tools-version:.*$/swift-tools-version: $SWIFT_VER.0/" {} + || true
-          fi
-        fi
-
-        echo "Running build.sh with Swift 5 mode..."
-        chmod +x build.sh
-        # Inject Swift 5 mode flags to avoid strict concurrency errors on older compilers
-        sed -i.bak4 's/swift build/swift build -Xswiftc -swift-version -Xswiftc 5/g' build.sh
         ./build.sh
 
         echo "Installing binary..."
