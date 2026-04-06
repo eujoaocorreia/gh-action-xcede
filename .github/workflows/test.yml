@@ -1,34 +1,52 @@
-name: Test Action
+name: Test xcede action
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feat/create-test-workflow
   pull_request:
 
 jobs:
-  test:
-    name: Run xcede action
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+  test-install-and-run:
+    name: Test Option 1 (Install and Run)
+    runs-on: macos-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run xcede action
-        id: xcede
+      - name: Run directly via action
+        id: xcede-run
         uses: ./
         with:
-          version: 'latest'
-          args: '--help'
+          version: "latest"
+          args: "--help"
 
-      - name: Verify output
-        env:
-          XCEDE_RESULT: ${{ steps.xcede.outputs.result }}
+      - name: Verify Output
         run: |
-          echo "result: $XCEDE_RESULT"
-          if [ -z "$XCEDE_RESULT" ]; then
-            echo "::error::Expected a non-empty 'result' output"
+          echo "Output from action:"
+          echo "${{ steps.xcede-run.outputs.result }}"
+          if [[ -z "${{ steps.xcede-run.outputs.result }}" ]]; then
+            echo "Error: Output was empty!"
             exit 1
           fi
+
+  test-cache-and-path:
+    name: Test Option 2 (Cache Restore and PATH)
+    needs: test-install-and-run
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install xcede (Should hit cache)
+        uses: ./
+        with:
+          version: "latest"
+
+      - name: Verify Execution in Bash
+        run: |
+          echo "Running xcede directly from bash:"
+          xcede --help
