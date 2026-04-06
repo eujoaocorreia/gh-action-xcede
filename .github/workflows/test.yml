@@ -9,8 +9,11 @@ on:
 
 jobs:
   test-install-and-run:
-    name: Test Option 1 (Install and Run)
+    name: Test Option 1 (${{ matrix.version }})
     runs-on: macos-latest
+    strategy:
+      matrix:
+        version: ["latest", "0.8.0", "0.6.0", "0.3.0"]
 
     steps:
       - name: Checkout code
@@ -20,7 +23,7 @@ jobs:
         id: xcede-run
         uses: ./
         with:
-          version: "latest"
+          version: "${{ matrix.version }}"
           args: "--help"
 
       - name: Verify Output
@@ -33,9 +36,12 @@ jobs:
           fi
 
   test-cache-and-path:
-    name: Test Option 2 (Cache Restore and PATH)
+    name: Test Option 2 (${{ matrix.version }})
     needs: test-install-and-run
     runs-on: macos-latest
+    strategy:
+      matrix:
+        version: ["latest"]
 
     steps:
       - name: Checkout code
@@ -44,7 +50,7 @@ jobs:
       - name: Install xcede (Should hit cache)
         uses: ./
         with:
-          version: "latest"
+          version: "${{ matrix.version }}"
 
       - name: Verify Execution in Bash
         run: |
