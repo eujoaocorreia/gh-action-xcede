@@ -10,7 +10,7 @@ inputs:
   args:
     description: Additional arguments to pass to xcede
     required: false
-    default: --help
+    default: help
 
 outputs:
   result:
@@ -26,19 +26,18 @@ runs:
       run: |
         VERSION="${{ inputs.version }}"
         if [ "$VERSION" = "latest" ]; then
-          echo "Resolving latest version from Codeberg..."
           VERSION=$(curl -sL https://codeberg.org/api/v1/repos/luxmentis/xcede/releases/latest | jq -r .tag_name)
           if [ -z "$VERSION" ] || [ "$VERSION" = "null" ]; then
-            echo "Failed to resolve latest version."
+            echo -e "\033[31m[xcede]\033[0m Failed to resolve latest version."
             exit 1
           fi
         fi
-        echo "Resolved version: $VERSION"
+        echo -e "\033[32m[xcede]\033[0m Resolved version: $VERSION"
         echo "resolved_version=$VERSION" >> "$GITHUB_OUTPUT"
 
     - name: Cache xcede binary
       id: cache
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ~/.xcede/bin
         key: xcede-${{ runner.os }}-${{ steps.resolve.outputs.resolved_version }}
@@ -53,48 +52,46 @@ runs:
         cd /tmp/xcede-build
 
         ZIP_URL="https://codeberg.org/luxmentis/xcede/archive/${VERSION}.zip"
-        echo "Downloading xcede $VERSION from $ZIP_URL"
         curl -sL "$ZIP_URL" -o xcede.zip
 
-        echo "Extracting archive..."
         unzip -q xcede.zip
         cd xcede
 
-        # Auto-select the newest Xcode version available on the runner to support the latest Swift features
         LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -n 1)
         if [ -n "$LATEST_XCODE" ]; then
-          echo "Selecting newest Xcode available: $LATEST_XCODE"
+          echo -e "\033[34m[xcede]\033[0m Selecting newest Xcode available: $LATEST_XCODE"
           sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
         else
-          echo "Warning: Could not find any Xcode in /Applications"
+          echo -e "\033[33m[xcede]\033[0m Warning: Could not find any Xcode in /Applications"
         fi
 
         ACTIVE_XCODE=$(xcodebuild -version | grep Xcode | awk '{print $2}')
-        echo "Active Xcode version: $ACTIVE_XCODE"
-
         if [[ "$(printf '%s\n' "26.0" "$ACTIVE_XCODE" | sort -V | head -n1)" == "$ACTIVE_XCODE" && "$ACTIVE_XCODE" != "26.0"* ]]; then
           echo "::warning::Xcode version ($ACTIVE_XCODE) is lower than 26.0. A more recent runner (minimum macos-15) must be used!"
         fi
 
-        ./build.sh
+        echo -e "\033[34m[xcede]\033[0m Building xcede..."
 
-        echo "Installing binary..."
-        # Locate the compiled xcede binary and move it to the cache directory
+        ./build.sh > /tmp/xcede_build.log 2>&1 || {
+          cat /tmp/xcede_build.log
+          echo -e "\033[31m[xcede]\033[0m Build failed!"
+          exit 1
+        }
+
         if [ -f "xcede" ]; then
           mv xcede ~/.xcede/bin/
         else
-          # Fallback to finding the executable named 'xcede'
           BINARY_PATH=$(find . -name "xcede" -type f -executable | head -n 1)
           if [ -n "$BINARY_PATH" ]; then
             mv "$BINARY_PATH" ~/.xcede/bin/
           else
-            echo "Error: Could not find compiled xcede binary."
+            echo -e "\033[31m[xcede]\033[0m Error: Could not find compiled xcede binary."
             exit 1
           fi
         fi
 
         chmod +x ~/.xcede/bin/xcede
-        echo "Build and installation complete."
+        echo -e "\033[32m[xcede]\033[0m Build complete."
 
     - name: Add to PATH
       shell: bash
@@ -104,7 +101,7 @@ runs:
       id: run
       shell: bash
       run: |
-        echo "Running xcede ${{ inputs.args }}"
+        echo -e "\033[34m[xcede]\033[0m xcede ${{ inputs.args }}"
 
         set +e
         OUTPUT=$(xcede ${{ inputs.args }} 2>&1)
@@ -119,6 +116,6 @@ runs:
         echo "$EOF" >> "$GITHUB_OUTPUT"
 
         if [ $EXIT_CODE -ne 0 ]; then
-          echo "xcede failed with exit code $EXIT_CODE"
+          echo -e "\033[31m[xcede]\033[0m xcede failed with exit code $EXIT_CODE"
           exit $EXIT_CODE
         fi
