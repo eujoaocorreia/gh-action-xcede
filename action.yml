@@ -104,15 +104,15 @@ runs:
         echo -e "\033[34m[xcede]\033[0m xcede ${{ inputs.args }}"
 
         set +e
-        OUTPUT=$(xcede ${{ inputs.args }})
+        xcede ${{ inputs.args }} > /tmp/xcede_out.log
         EXIT_CODE=$?
         set -e
 
-        echo "$OUTPUT"
+        cat /tmp/xcede_out.log
 
-        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        EOF=$(uuidgen)
         echo "result<<$EOF" >> "$GITHUB_OUTPUT"
-        echo "$OUTPUT" >> "$GITHUB_OUTPUT"
+        cat /tmp/xcede_out.log >> "$GITHUB_OUTPUT"
         echo "$EOF" >> "$GITHUB_OUTPUT"
 
         if [ $EXIT_CODE -ne 0 ]; then
