@@ -16,7 +16,7 @@ jobs:
         version: ["latest", "0.4.0", "0.2.0"]
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v6
 
       - name: Run directly via action
@@ -44,7 +44,7 @@ jobs:
         version: ["latest"]
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v6
 
       - name: Install xcede (Should hit cache)

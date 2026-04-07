@@ -60,18 +60,20 @@ runs:
         unzip -q xcede.zip
         cd xcede
 
-        CURRENT_XCODE=$(xcodebuild -version | grep Xcode | awk '{print $2}')
-        echo "Current Xcode version: $CURRENT_XCODE"
+        # Auto-select the newest Xcode version available on the runner to support the latest Swift features
+        LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -n 1)
+        if [ -n "$LATEST_XCODE" ]; then
+          echo "Selecting newest Xcode available: $LATEST_XCODE"
+          sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+        else
+          echo "Warning: Could not find any Xcode in /Applications"
+        fi
 
-        # Compare versions (switch if lower than 26.0.1)
-        if [[ "$(printf '%s\n' "26.0.1" "$CURRENT_XCODE" | sort -V | head -n1)" == "$CURRENT_XCODE" && "$CURRENT_XCODE" != "26.0.1" ]]; then
-          echo "Xcode version is lower than 26.0.1. Attempting to select a newer version..."
-          if [ -d "/Applications/Xcode_26.0.app" ]; then
-            echo "Selecting Xcode 26.0..."
-            sudo xcode-select -s /Applications/Xcode_26.0.app/Contents/Developer
-          else
-            echo "Warning: Could not find Xcode 26.0+. Make sure to use runner macos-15+"
-          fi
+        ACTIVE_XCODE=$(xcodebuild -version | grep Xcode | awk '{print $2}')
+        echo "Active Xcode version: $ACTIVE_XCODE"
+
+        if [[ "$(printf '%s\n' "26.0" "$ACTIVE_XCODE" | sort -V | head -n1)" == "$ACTIVE_XCODE" && "$ACTIVE_XCODE" != "26.0"* ]]; then
+          echo "::warning::Xcode version ($ACTIVE_XCODE) is lower than 26.0. A more recent runner (minimum macos-15) must be used!"
         fi
 
         ./build.sh
