@@ -104,7 +104,7 @@ runs:
         echo -e "\033[34m[xcede]\033[0m xcede ${{ inputs.args }}"
 
         set +e
-        OUTPUT=$(xcede ${{ inputs.args }} 2>&1)
+        OUTPUT=$(xcede ${{ inputs.args }})
         EXIT_CODE=$?
         set -e
 
