@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        version: ["latest", "0.4.0", "0.2.0"]
+        version: ["latest", "0.8.0", "0.6.0", "0.3.0"]
 
     steps:
       - name: Checkout
@@ -24,7 +24,7 @@ jobs:
         uses: ./
         with:
           version: "${{ matrix.version }}"
-          args: "--help"
+          args: help
 
       - name: Verify Output
         run: |
@@ -55,4 +55,4 @@ jobs:
       - name: Verify Execution in Bash
         run: |
           echo "Running xcede directly from bash:"
-          xcede --help
+          xcede help
