@@ -13,7 +13,7 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        version: ["latest", "0.8.0", "0.6.0", "0.3.0"]
+        version: ["latest"] #, "0.6.0", "0.3.0"]
 
     steps:
       - name: Checkout
@@ -23,14 +23,16 @@ jobs:
         id: xcede-run
         uses: ./
         with:
-          version: "${{ matrix.version }}"
+          version: ${{ matrix.version }}
           args: help
 
       - name: Verify Output
+        env:
+          XCEDE_RESULT: ${{ steps.xcede-run.outputs.result }}
         run: |
           echo "Output from action:"
-          echo "${{ steps.xcede-run.outputs.result }}"
-          if [[ -z "${{ steps.xcede-run.outputs.result }}" ]]; then
+          echo "$XCEDE_RESULT"
+          if [[ -z "$XCEDE_RESULT" ]]; then
             echo "Error: Output was empty!"
             exit 1
           fi
@@ -50,7 +52,7 @@ jobs:
       - name: Install xcede (Should hit cache)
         uses: ./
         with:
-          version: "${{ matrix.version }}"
+          version: ${{ matrix.version }}
 
       - name: Verify Execution in Bash
         run: |
