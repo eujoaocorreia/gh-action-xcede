@@ -10,9 +10,14 @@
 - **Releases**: [https://codeberg.org/luxmentis/xcede/releases](https://codeberg.org/luxmentis/xcede/releases)
 - **Documentation**: [https://codeberg.org/luxmentis/xcede/src/branch/main/HELP.md](https://codeberg.org/luxmentis/xcede/src/branch/main/HELP.md)
 
+## Compatibility & macOS Runners
+
+Make sure to use macos-15+ runner.\
+Because `xcede` needs Xcode 26+ to compile from source.
+
 ## Usage
 
-> **Note:** Because `xcede` is a tool for building Apple applications (like iOS), this action must be run on a macOS runner (e.g., `macos-latest` or `macos-13`).
+> **Note:** Because `xcede` is a tool for building Apple applications (like iOS), this action must be run on a macOS runner (e.g., `macos-latest` or `macos-15`).
 
 This action can be used in two ways: to run `xcede` directly via the action's `args` input, or to install it so it is available in your `$PATH` for subsequent shell steps.
 
@@ -22,8 +27,8 @@ This action can be used in two ways: to run `xcede` directly via the action's `a
 - name: Run xcede
   uses: eujoaocorreia/gh-action-xcede@v1
   with:
-    version: 'latest'   # optional, defaults to "latest"
-    args: '--help'      # optional, extra CLI arguments
+    version: latest   # optional, defaults to "latest"
+    args: help        # optional extra CLI arguments, defaults to "help"
 ```
 
 ### Option 2: Install and use in subsequent steps
@@ -32,19 +37,19 @@ This action can be used in two ways: to run `xcede` directly via the action's `a
 - name: Install xcede
   uses: eujoaocorreia/gh-action-xcede@v1
   with:
-    version: 'latest'
+    version: latest
 
 - name: Use xcede in a script
   run: |
-    xcede --help
+    xcede help
 ```
 
 ### Inputs
 
-| Input     | Required | Default    | Description                           |
-|-----------|----------|------------|---------------------------------------|
-| `version` | No       | `'latest'` | Version of xcede to install           |
-| `args`    | No       | `''`       | Additional arguments to pass to xcede |
+| Input     | Required | Default  | Description                           |
+|-----------|----------|----------|---------------------------------------|
+| `version` | No       | `latest` | Version of xcede to install           |
+| `args`    | No       | `help`   | Additional arguments to pass to xcede |
 
 ### Outputs
 
@@ -66,24 +71,28 @@ jobs:
   xcede:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Example 1: Using the action to execute xcede and capture output
       - name: Run xcede
         id: xcede
         uses: eujoaocorreia/gh-action-xcede@v1
         with:
-          version: 'latest'
-          args: '--help'
+          version: latest
+          args: help
 
       - name: Print result
-        run: echo "xcede output: ${{ steps.xcede.outputs.result }}"
+        env:
+          XCEDE_RESULT: ${{ steps.xcede.outputs.result }}
+        run: |
+          echo "xcede output:"
+          echo "$XCEDE_RESULT"
 
       # Example 2: Using the installed binary in a regular run step
       - name: Run xcede directly in a bash script
         run: |
           echo "Running xcede from bash!"
-          xcede --help
+          xcede help
 ```
 
 ## Development

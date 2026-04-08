@@ -1,34 +1,60 @@
-name: Test Action
+name: Test xcede action
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feat/create-test-workflow
   pull_request:
 
 jobs:
-  test:
-    name: Run xcede action
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+  test-install-and-run:
+    name: Test Option 1 (${{ matrix.version }})
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        version: ["latest", "0.6.0", "0.3.0"]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - name: Run xcede action
-        id: xcede
+      - name: Run directly via action
+        id: xcede-run
         uses: ./
         with:
-          version: 'latest'
-          args: '--help'
+          version: ${{ matrix.version }}
+          args: help
 
-      - name: Verify output
+      - name: Verify Output
         env:
-          XCEDE_RESULT: ${{ steps.xcede.outputs.result }}
+          XCEDE_RESULT: ${{ steps.xcede-run.outputs.result }}
         run: |
-          echo "result: $XCEDE_RESULT"
-          if [ -z "$XCEDE_RESULT" ]; then
-            echo "::error::Expected a non-empty 'result' output"
+          echo "Output from action:"
+          echo "$XCEDE_RESULT"
+          if [[ -z "$XCEDE_RESULT" ]]; then
+            echo "Error: Output was empty!"
             exit 1
           fi
+
+  test-cache-and-path:
+    name: Test Option 2 (${{ matrix.version }})
+    needs: test-install-and-run
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        version: ["latest"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install xcede (Should hit cache)
+        uses: ./
+        with:
+          version: ${{ matrix.version }}
+
+      - name: Verify Execution in Bash
+        run: |
+          echo "Running xcede directly from bash:"
+          xcede help
