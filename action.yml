@@ -110,10 +110,9 @@ runs:
 
         cat /tmp/xcede_out.log
 
-        EOF=$(uuidgen)
-        echo "result<<$EOF" >> "$GITHUB_OUTPUT"
+        echo "result<<EOF" >> "$GITHUB_OUTPUT"
         cat /tmp/xcede_out.log >> "$GITHUB_OUTPUT"
-        echo "$EOF" >> "$GITHUB_OUTPUT"
+        echo "EOF" >> "$GITHUB_OUTPUT"
 
         if [ $EXIT_CODE -ne 0 ]; then
           echo -e "\033[31m[xcede]\033[0m xcede failed with exit code $EXIT_CODE"
