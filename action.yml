@@ -110,7 +110,7 @@ runs:
 
         cat /tmp/xcede_out.log
 
-        echo "result<<EOF" >> "$GITHUB_OUTPUT"
+        echo "result<<EOF" > "$GITHUB_OUTPUT"
         cat /tmp/xcede_out.log >> "$GITHUB_OUTPUT"
         echo "EOF" >> "$GITHUB_OUTPUT"
 
