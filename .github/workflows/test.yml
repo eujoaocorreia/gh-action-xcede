@@ -1,11 +1,9 @@
 name: Test xcede action
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-      - feat/create-test-workflow
-  pull_request:
 
 jobs:
   test-install-and-run:

@@ -107,12 +107,12 @@ runs:
       run: |
         echo -e "\033[34m[xcede]\033[0m xcede ${{ inputs.args }}"
 
+        set -o pipefail
         set +e
-        xcede ${{ inputs.args }} > /tmp/xcede_out.log
+        xcede ${{ inputs.args }} | tee /tmp/xcede_out.log
         EXIT_CODE=$?
         set -e
-
-        cat /tmp/xcede_out.log
+        set +o pipefail
 
         EOF=$(uuidgen)
         echo "result<<$EOF" >> "$GITHUB_OUTPUT"
