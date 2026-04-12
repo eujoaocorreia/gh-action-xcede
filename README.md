@@ -51,12 +51,6 @@ This action can be used in two ways: to run `xcede` directly via the action's `a
 | `version` | No       | `latest` | Version of xcede to install           |
 | `args`    | No       | `help`   | Additional arguments to pass to xcede |
 
-### Outputs
-
-| Output   | Description              |
-|----------|--------------------------|
-| `result` | Output produced by xcede |
-
 ## Example workflow
 
 ```yaml
@@ -73,20 +67,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # Example 1: Using the action to execute xcede and capture output
+      # Example 1: Using the action to execute xcede
       - name: Run xcede
-        id: xcede
         uses: eujoaocorreia/gh-action-xcede@v1
         with:
           version: latest
           args: help
-
-      - name: Print result
-        env:
-          XCEDE_RESULT: ${{ steps.xcede.outputs.result }}
-        run: |
-          echo "xcede output:"
-          echo "$XCEDE_RESULT"
 
       # Example 2: Using the installed binary in a regular run step
       - name: Run xcede directly in a bash script

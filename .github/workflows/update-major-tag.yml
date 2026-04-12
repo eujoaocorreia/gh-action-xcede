@@ -1,0 +1,35 @@
+name: Update Major Tag
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-major-tag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Update major version tag
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          MAJOR="${TAG%%.*}"
+
+          if [[ "$MAJOR" =~ ^v[0-9]+$ ]]; then
+            echo "Updating $MAJOR tag to point to $TAG..."
+
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+            git tag -fa "$MAJOR" -m "Automatically update $MAJOR tag to point to $TAG"
+            git push origin "$MAJOR" --force
+
+            echo "Successfully updated $MAJOR!"
+          else
+            echo "Tag $TAG does not start with a standard vX format. Skipping major tag update."
+          fi
