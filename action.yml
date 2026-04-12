@@ -97,7 +97,6 @@ runs:
       run: echo "$HOME/.xcede/bin" >> "$GITHUB_PATH"
 
     - name: Run xcede
-      id: run
       shell: bash
       run: |
         echo -e "\033[34m[xcede]\033[0m xcede ${{ inputs.args }}"
