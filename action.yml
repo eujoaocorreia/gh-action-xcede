@@ -1,6 +1,10 @@
 name: Run xcede
-description: GitHub Action for the xcede tool
+description: Automatically downloads, builds, caches, and runs the xcede CLI tool.
 author: Joao Correia
+
+branding:
+  icon: terminal
+  color: blue
 
 inputs:
   version:
