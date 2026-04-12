@@ -108,18 +108,21 @@ runs:
         echo -e "\033[34m[xcede]\033[0m xcede ${{ inputs.args }}"
 
         set +e
-        xcede ${{ inputs.args }} > /tmp/xcede_out.log
-        EXIT_CODE=$?
+        xcede ${{ inputs.args }} | tee /tmp/xcede_out.log
+        XCEDE_EXIT_CODE=${PIPESTATUS[0]}
+        TEE_EXIT_CODE=${PIPESTATUS[1]}
         set -e
 
-        cat /tmp/xcede_out.log
+        if [ $TEE_EXIT_CODE -ne 0 ]; then
+          echo -e "\033[33m[xcede]\033[0m tee failed with exit code $TEE_EXIT_CODE"
+        fi
 
         EOF=$(uuidgen)
         echo "result<<$EOF" >> "$GITHUB_OUTPUT"
         cat /tmp/xcede_out.log >> "$GITHUB_OUTPUT"
         echo "$EOF" >> "$GITHUB_OUTPUT"
 
-        if [ $EXIT_CODE -ne 0 ]; then
-          echo -e "\033[31m[xcede]\033[0m xcede failed with exit code $EXIT_CODE"
-          exit $EXIT_CODE
+        if [ $XCEDE_EXIT_CODE -ne 0 ]; then
+          echo -e "\033[31m[xcede]\033[0m xcede failed with exit code $XCEDE_EXIT_CODE"
+          exit $XCEDE_EXIT_CODE
         fi
