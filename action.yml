@@ -16,11 +16,6 @@ inputs:
     required: false
     default: help
 
-outputs:
-  result:
-    description: Output produced by xcede
-    value: ${{ steps.run.outputs.result }}
-
 runs:
   using: composite
   steps:
@@ -106,23 +101,4 @@ runs:
       shell: bash
       run: |
         echo -e "\033[34m[xcede]\033[0m xcede ${{ inputs.args }}"
-
-        set +e
-        xcede ${{ inputs.args }} | tee /tmp/xcede_out.log
-        XCEDE_EXIT_CODE=${PIPESTATUS[0]}
-        TEE_EXIT_CODE=${PIPESTATUS[1]}
-        set -e
-
-        if [ $TEE_EXIT_CODE -ne 0 ]; then
-          echo -e "\033[33m[xcede]\033[0m tee failed with exit code $TEE_EXIT_CODE"
-        fi
-
-        EOF=$(uuidgen)
-        echo "result<<$EOF" >> "$GITHUB_OUTPUT"
-        cat /tmp/xcede_out.log >> "$GITHUB_OUTPUT"
-        echo "$EOF" >> "$GITHUB_OUTPUT"
-
-        if [ $XCEDE_EXIT_CODE -ne 0 ]; then
-          echo -e "\033[31m[xcede]\033[0m xcede failed with exit code $XCEDE_EXIT_CODE"
-          exit $XCEDE_EXIT_CODE
-        fi
+        xcede ${{ inputs.args }}
